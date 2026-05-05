@@ -123,38 +123,30 @@
         <!-- MODO VR: ENTORNO 360 -->
         <a-entity id="vr-environment" visible="true">
             <a-sky src="#cafetal-360" rotation="0 -90 0"></a-sky>
-            <!-- MODELO FLOTANDO EN VR PARA PROBAR SIN MARCADOR -->
-            <a-entity 
-                id="maquina-vr"
-                gltf-model="#model-maquina" 
-                scale="0.1 0.1 0.1" 
-                position="0 1 -3" 
-                animation="property: rotation; to: 0 360 0; loop: true; dur: 15000">
-            </a-entity>
         </a-entity>
 
-        <!-- MODO RA: MARCADOR -->
-        <!-- Usamos el marcador Tarjeta.webp como imagen si AR.js lo soporta o preset Hiro por defecto -->
-        <a-marker preset="hiro" id="marker-ra">
+        <!-- CONTENEDOR DE MODELOS RA (sin marcador, visibles en pantalla) -->
+        <a-entity id="ra-container" visible="false" position="0 1 -2.5">
             <!-- Modelo Maquinaria -->
             <a-entity 
                 id="entity-maquina"
                 gltf-model="#model-maquina" 
                 scale="0.1 0.1 0.1" 
-                rotation="-90 0 0" 
+                rotation="0 0 0" 
                 position="0 0 0"
+                animation="property: rotation; to: 0 360 0; loop: true; dur: 15000"
                 visible="true">
             </a-entity>
-            <!-- Modelo Grano -->
+            <!-- Modelo Grano (placeholder esfera) -->
             <a-entity 
                 id="entity-grano"
-                geometry="primitive: sphere; radius: 0.2" 
-                material="color: #4b2c20"
-                position="0 0.2 0"
-                visible="false">
-                <a-text value="GRANO DE CAFE" align="center" position="0 0.4 0" scale="0.5 0.5 0.5"></a-text>
+                visible="false"
+                position="0 0 0">
+                <a-sphere radius="0.15" color="#4b2c20" segments-height="18" segments-width="36"
+                    animation="property: rotation; to: 0 360 0; loop: true; dur: 8000"></a-sphere>
+                <a-text value="GRANO DE CAFÉ" align="center" position="0 0.35 0" scale="0.6 0.6 0.6" color="white"></a-text>
             </a-entity>
-        </a-marker>
+        </a-entity>
 
         <a-entity id="main-camera" camera look-controls position="0 1.6 0"></a-entity>
     </a-scene>
@@ -215,19 +207,23 @@
         // Cambio de Modos
         function setMode(mode) {
             const vrEnv = document.getElementById('vr-environment');
-            const scene = document.querySelector('a-scene');
+            const raContainer = document.getElementById('ra-container');
             const camera = document.getElementById('main-camera');
             
             if (mode === 'ar') {
-                title.innerText = "MODO AR ACTIVO";
+                title.innerText = "MODO RA ACTIVO";
                 title.style.color = "#FF8C00";
                 vrEnv.setAttribute('visible', 'false');
-                camera.removeAttribute('look-controls'); // Evitar pelea giroscopio vs AR.js
+                raContainer.setAttribute('visible', 'true');
+                // Mostrar maquina por defecto
+                document.getElementById('entity-maquina').setAttribute('visible', 'true');
+                document.getElementById('entity-grano').setAttribute('visible', 'false');
             } else {
-                title.innerText = "MODO VR ACTIVO";
+                title.innerText = "CAFÉ PENSILVANIA";
                 title.style.color = "white";
                 vrEnv.setAttribute('visible', 'true');
-                camera.setAttribute('look-controls', ''); // Restaurar giro 360
+                raContainer.setAttribute('visible', 'false');
+                camera.setAttribute('look-controls', '');
             }
         }
 
@@ -235,14 +231,22 @@
         function switchView(type) {
             const maquina = document.getElementById('entity-maquina');
             const grano = document.getElementById('entity-grano');
+            const raContainer = document.getElementById('ra-container');
+
+            // Asegurar que RA esté visible
+            raContainer.setAttribute('visible', 'true');
+            document.getElementById('vr-environment').setAttribute('visible', 'false');
 
             if (type === 'maquina') {
                 maquina.setAttribute('visible', 'true');
                 grano.setAttribute('visible', 'false');
+                title.innerText = "RA: DESPULPADORA";
             } else if (type === 'grano') {
                 maquina.setAttribute('visible', 'false');
                 grano.setAttribute('visible', 'true');
+                title.innerText = "RA: GRANO DE CAFÉ";
             }
+            title.style.color = "#FF8C00";
             console.log("Cambiando vista a:", type);
         }
 
