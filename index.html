@@ -123,6 +123,14 @@
         <!-- MODO VR: ENTORNO 360 -->
         <a-entity id="vr-environment" visible="true">
             <a-sky src="#cafetal-360" rotation="0 -90 0"></a-sky>
+            <!-- MODELO FLOTANDO EN VR PARA PROBAR SIN MARCADOR -->
+            <a-entity 
+                id="maquina-vr"
+                gltf-model="#model-maquina" 
+                scale="0.8 0.8 0.8" 
+                position="0 1.5 -3" 
+                animation="property: rotation; to: 0 360 0; loop: true; dur: 10000">
+            </a-entity>
         </a-entity>
 
         <!-- MODO RA: MARCADOR -->
@@ -148,7 +156,7 @@
             </a-entity>
         </a-marker>
 
-        <a-entity camera></a-entity>
+        <a-entity id="main-camera" camera look-controls position="0 1.6 0"></a-entity>
     </a-scene>
 
     <!-- ELEMENTO DE AUDIO -->
@@ -189,16 +197,18 @@
         function setMode(mode) {
             const vrEnv = document.getElementById('vr-environment');
             const scene = document.querySelector('a-scene');
+            const camera = document.getElementById('main-camera');
             
             if (mode === 'ar') {
                 title.innerText = "MODO AR ACTIVO";
                 title.style.color = "#FF8C00";
                 vrEnv.setAttribute('visible', 'false');
-                // AR.js maneja la cámara automáticamente si está configurado
+                camera.removeAttribute('look-controls'); // Evitar pelea giroscopio vs AR.js
             } else {
                 title.innerText = "MODO VR ACTIVO";
                 title.style.color = "white";
                 vrEnv.setAttribute('visible', 'true');
+                camera.setAttribute('look-controls', ''); // Restaurar giro 360
             }
         }
 
