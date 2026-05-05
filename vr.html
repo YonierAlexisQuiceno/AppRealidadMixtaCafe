@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LUBIT - Cafetal 360°</title>
+    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap');
+        body { font-family: 'Outfit', sans-serif; margin: 0; overflow: hidden; }
+        #ui-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 100; pointer-events: none;
+            display: flex; flex-direction: column; justify-content: space-between;
+        }
+        #ui-overlay * { pointer-events: auto; }
+        .glass-panel {
+            background: rgba(0, 51, 102, 0.5);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ESCENA VR 360 -->
+    <a-scene
+        loading-screen="enabled: false"
+        vr-mode-ui="enabled: false"
+        renderer="logarithmicDepthBuffer: true;"
+    >
+        <a-assets timeout="120000">
+            <img id="cafetal-360" src="assets/fondo.jpg" crossorigin="anonymous">
+        </a-assets>
+
+        <a-light type="ambient" color="#ffffff" intensity="1.5"></a-light>
+
+        <a-sky src="#cafetal-360" rotation="0 -90 0"></a-sky>
+        <a-entity camera look-controls position="0 1.6 0"></a-entity>
+    </a-scene>
+
+    <!-- UI SUPERPUESTA -->
+    <div id="ui-overlay">
+        <!-- HEADER -->
+        <header class="bg-[#003366]/80 backdrop-blur-md text-white p-3 flex justify-between items-center border-b-4 border-[#00c2ff]">
+            <a href="index.html" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg font-bold flex items-center gap-2 no-underline text-white transition-colors">
+                ← Menú
+            </a>
+            <div class="text-center">
+                <h1 class="font-black italic tracking-tighter text-lg md:text-2xl text-[#00c2ff]">🏞️ CAFETAL 360°</h1>
+                <p class="text-[10px] tracking-[0.3em] uppercase opacity-60">Mueve tu dispositivo para explorar</p>
+            </div>
+            <div class="flex gap-2">
+                <button id="toggleFullscreen" class="bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors" title="Pantalla Completa">🖥️</button>
+                <button id="toggleAudio" class="bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors">🔊</button>
+            </div>
+        </header>
+
+        <!-- FOOTER -->
+        <footer class="p-4 flex justify-center">
+            <a href="ar.html" class="glass-panel px-6 py-3 rounded-2xl font-bold text-[#FF8C00] hover:bg-white/10 transition-colors no-underline flex items-center gap-2">
+                📱 Cambiar a Realidad Aumentada →
+            </a>
+        </footer>
+    </div>
+
+    <!-- AUDIO -->
+    <audio id="bgMusic" loop>
+        <source src="assets/SONIDOFONDO.m4a" type="audio/mp4">
+    </audio>
+
+    <script>
+        // Audio
+        const audio = document.getElementById('bgMusic');
+        const toggleBtn = document.getElementById('toggleAudio');
+        let isPlaying = false;
+        toggleBtn.addEventListener('click', () => {
+            if (isPlaying) { audio.pause(); toggleBtn.innerText = '🔇'; }
+            else { audio.play(); toggleBtn.innerText = '🔊'; }
+            isPlaying = !isPlaying;
+        });
+
+        // Fullscreen
+        document.getElementById('toggleFullscreen').addEventListener('click', () => {
+            let elem = document.documentElement;
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                if (elem.requestFullscreen) elem.requestFullscreen();
+                else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            }
+        });
+    </script>
+</body>
+</html>
