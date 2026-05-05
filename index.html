@@ -128,8 +128,8 @@
             <a-sky src="#cafetal-360" rotation="0 -90 0"></a-sky>
         </a-entity>
 
-        <!-- CONTENEDOR DE MODELOS RA (sin marcador, visibles en pantalla) -->
-        <a-entity id="ra-container" visible="false" position="0 1 -2.5">
+        <!-- CONTENEDOR DE MODELOS RA (ANCLADO AL MARCADOR) -->
+        <a-marker type="pattern" url="assets/tarjeta.pat" id="ra-container" visible="false">
             <!-- Modelo Maquinaria -->
             <a-entity 
                 id="entity-maquina"
@@ -149,7 +149,7 @@
                 position="0 0 0"
                 animation="property: rotation; to: 0 360 0; loop: true; dur: 8000">
             </a-entity>
-        </a-entity>
+        </a-marker>
 
         <a-entity id="main-camera" camera look-controls position="0 1.6 0"></a-entity>
     </a-scene>
