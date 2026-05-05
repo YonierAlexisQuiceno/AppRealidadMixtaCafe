@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LUBIT - Experiencia Cafetera</title>
+    <!-- Bibliotecas Externas -->
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Estilos Gamificados y Glassmorphism */
+        .glass-panel {
+            background: rgba(0, 51, 102, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .btn-gamer {
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 0 #cc7000;
+        }
+        .btn-gamer:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+        .btn-gamer-blue {
+            box-shadow: 0 4px 0 #001a33;
+        }
+        .btn-gamer-blue:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+        #ar-overlay { display: none; }
+        body.ar-mode #vr-scene { visibility: hidden; }
+        body.ar-mode #ar-overlay { display: block; }
+        /* Fix para AR.js video */
+        .a-canvas { z-index: 0; }
+        #ui-layer { z-index: 100; position: relative; pointer-events: none; }
+        #ui-layer * { pointer-events: auto; }
+    </style>
+</head>
+<body class="bg-black m-0 overflow-hidden font-sans">
+
+    <!-- CAPA DE INTERFAZ (UI) -->
+    <div id="ui-layer" class="fixed inset-0 flex flex-col justify-between h-screen w-screen">
+        
+        <!-- HEADER INSTITUCIONAL -->
+        <header class="bg-[#003366] text-white p-4 flex justify-between items-center border-b-4 border-[#FF8C00] shadow-2xl">
+            <div class="flex items-center gap-4">
+                <div class="bg-white p-1 rounded-md">
+                    <img src="logo_ies.png" alt="CINOC" class="h-8" onerror="this.src='https://placehold.co/100x40/003366/white?text=IES+CINOC'">
+                </div>
+                <button class="bg-[#FF8C00] hover:bg-orange-600 p-2 rounded-lg btn-gamer text-xl" title="Home">🏠</button>
+            </div>
+            
+            <div class="text-center">
+                <h1 id="main-title" class="font-black italic tracking-tighter text-xl md:text-2xl">CAFÉ PENSILVANIA</h1>
+                <p class="text-[10px] tracking-[0.3em] uppercase opacity-80">Experiencia LUBIT</p>
+            </div>
+
+            <div class="flex gap-3 items-center">
+                <button id="toggleAudio" class="bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors">🔊</button>
+                <button id="replayAudio" class="bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors">🔄</button>
+                <a href="mailto:tecnologolaboratorio@iescinoc.edu.co" class="bg-[#FF8C00] px-4 py-2 rounded-lg font-black btn-gamer flex items-center gap-2" title="FAQ">
+                    <span class="hidden md:inline">FAQ</span>
+                    <span>❔</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- CONTROLES INFERIORES -->
+        <footer class="p-6 md:p-10 flex justify-between items-end">
+            <!-- MENÚ RA (IZQUIERDA) -->
+            <div class="relative group">
+                <div class="absolute bottom-24 left-0 mb-2 opacity-0 group-hover:opacity-100 transition-all transform translate-y-4 group-hover:translate-y-0 pointer-events-none group-hover:pointer-events-auto">
+                    <div class="glass-panel p-4 rounded-2xl flex flex-col gap-3 min-w-[200px]">
+                        <h3 class="text-[#FF8C00] font-bold text-sm border-b border-white/10 pb-1">MODO REALIDAD AUMENTADA</h3>
+                        <button onclick="switchView('maquina')" class="text-left text-white hover:text-[#FF8C00] font-medium transition-colors">⚙️ Ver Maquinaria</button>
+                        <button onclick="switchView('grano')" class="text-left text-white hover:text-[#FF8C00] font-medium transition-colors">🌱 Ver Grano</button>
+                    </div>
+                </div>
+                <button onclick="setMode('ar')" class="bg-[#FF8C00] text-white px-8 py-5 rounded-2xl font-black btn-gamer text-2xl flex items-center gap-3">
+                    <span class="text-3xl">📱</span> RA
+                </button>
+            </div>
+
+            <!-- MENÚ RV (DERECHA) -->
+            <div class="relative group">
+                <div class="absolute bottom-24 right-0 mb-2 opacity-0 group-hover:opacity-100 transition-all transform translate-y-4 group-hover:translate-y-0 pointer-events-none group-hover:pointer-events-auto">
+                    <div class="glass-panel p-4 rounded-2xl flex flex-col gap-3 min-w-[200px] items-end text-right">
+                        <h3 class="text-[#00c2ff] font-bold text-sm border-b border-white/10 pb-1">MODO REALIDAD VIRTUAL</h3>
+                        <button onclick="switchView('entorno')" class="text-right text-white hover:text-[#00c2ff] font-medium transition-colors">🏞️ Ir al Cafetal</button>
+                        <button onclick="switchView('ciclo')" class="text-right text-white hover:text-[#00c2ff] font-medium transition-colors">⏳ Ciclo Cultivo</button>
+                    </div>
+                </div>
+                <button onclick="setMode('vr')" class="bg-[#003366] text-white px-8 py-5 rounded-2xl font-black btn-gamer btn-gamer-blue border-2 border-[#00c2ff] text-2xl flex items-center gap-3">
+                    RV <span class="text-3xl">🥽</span>
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- ESCENA WEBXR (A-FRAME + AR.JS) -->
+    <!-- Nota: AR.js requiere a-scene con arjs config -->
+    <a-scene 
+        embedded 
+        arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;" 
+        vr-mode-ui="enabled: true"
+        renderer="logarithmicDepthBuffer: true;"
+        id="main-scene"
+    >
+        <a-assets>
+            <img id="cafetal-360" src="assets/fondo.jpg">
+            <a-asset-item id="model-maquina" src="assets/Despulpadora.glb"></a-asset-item>
+            <!-- Grano placeholder si no existe el glb -->
+            <a-asset-item id="model-grano" src="assets/grano.glb"></a-asset-item>
+        </a-assets>
+
+        <!-- MODO VR: ENTORNO 360 -->
+        <a-entity id="vr-environment" visible="true">
+            <a-sky src="#cafetal-360" rotation="0 -90 0"></a-sky>
+            <a-light type="ambient" intensity="0.8"></a-light>
+            <a-light type="directional" position="1 1 1" intensity="0.5"></a-light>
+        </a-entity>
+
+        <!-- MODO RA: MARCADOR -->
+        <!-- Usamos el marcador Tarjeta.webp como imagen si AR.js lo soporta o preset Hiro por defecto -->
+        <a-marker preset="hiro" id="marker-ra">
+            <!-- Modelo Maquinaria -->
+            <a-entity 
+                id="entity-maquina"
+                gltf-model="#model-maquina" 
+                scale="0.5 0.5 0.5" 
+                rotation="-90 0 0" 
+                position="0 0 0"
+                visible="true">
+            </a-entity>
+            <!-- Modelo Grano -->
+            <a-entity 
+                id="entity-grano"
+                geometry="primitive: sphere; radius: 0.2" 
+                material="color: #4b2c20"
+                position="0 0.2 0"
+                visible="false">
+                <a-text value="GRANO DE CAFE" align="center" position="0 0.4 0" scale="0.5 0.5 0.5"></a-text>
+            </a-entity>
+        </a-marker>
+
+        <a-entity camera look-controls position="0 1.6 0"></a-entity>
+    </a-scene>
+
+    <!-- ELEMENTO DE AUDIO -->
+    <audio id="bgMusic" loop>
+        <source src="assets/SONIDOFONDO.mp4" type="audio/mp4">
+    </audio>
+
+    <script>
+        const audio = document.getElementById('bgMusic');
+        const toggleBtn = document.getElementById('toggleAudio');
+        const replayBtn = document.getElementById('replayAudio');
+        const title = document.getElementById('main-title');
+        
+        let isPlaying = false;
+
+        // Lógica de Audio
+        toggleBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                audio.pause();
+                toggleBtn.innerText = '🔇';
+            } else {
+                audio.play();
+                toggleBtn.innerText = '🔊';
+            }
+            isPlaying = !isPlaying;
+        });
+
+        replayBtn.addEventListener('click', () => {
+            audio.currentTime = 0;
+            if (!isPlaying) {
+                audio.play();
+                isPlaying = true;
+                toggleBtn.innerText = '🔊';
+            }
+        });
+
+        // Cambio de Modos
+        function setMode(mode) {
+            const vrEnv = document.getElementById('vr-environment');
+            const scene = document.querySelector('a-scene');
+            
+            if (mode === 'ar') {
+                title.innerText = "MODO AR ACTIVO";
+                title.style.color = "#FF8C00";
+                vrEnv.setAttribute('visible', 'false');
+                // AR.js maneja la cámara automáticamente si está configurado
+            } else {
+                title.innerText = "MODO VR ACTIVO";
+                title.style.color = "white";
+                vrEnv.setAttribute('visible', 'true');
+            }
+        }
+
+        // Cambio de Vistas / Modelos
+        function switchView(type) {
+            const maquina = document.getElementById('entity-maquina');
+            const grano = document.getElementById('entity-grano');
+
+            if (type === 'maquina') {
+                maquina.setAttribute('visible', 'true');
+                grano.setAttribute('visible', 'false');
+            } else if (type === 'grano') {
+                maquina.setAttribute('visible', 'false');
+                grano.setAttribute('visible', 'true');
+            }
+            console.log("Cambiando vista a:", type);
+        }
+
+        // Manejo de errores de carga de modelos
+        document.getElementById('model-grano').addEventListener('model-error', () => {
+            console.warn("Grano GLB no encontrado, usando placeholder");
+            const grano = document.getElementById('entity-grano');
+            grano.removeAttribute('gltf-model');
+            grano.setAttribute('geometry', 'primitive: sphere; radius: 0.2');
+        });
+    </script>
+</body>
+</html>
