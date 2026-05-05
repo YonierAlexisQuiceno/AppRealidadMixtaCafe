@@ -34,6 +34,9 @@
         #ar-overlay { display: none; }
         body.ar-mode #vr-scene { visibility: hidden; }
         body.ar-mode #ar-overlay { display: block; }
+        /* Ocultar webcam de AR.js en modo VR */
+        body:not(.ar-mode) video { display: none !important; }
+        body:not(.ar-mode) .a-modal { display: none !important; } /* Ocultar modal de error de AR.js */
         /* Fix UI AR.js */
         #ui-layer { z-index: 100; position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
         #ui-layer * { pointer-events: auto; }
@@ -109,9 +112,8 @@
         arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;" 
         vr-mode-ui="enabled: true"
         renderer="logarithmicDepthBuffer: true;"
-        id="main-scene"
     >
-        <a-assets timeout="3000">
+        <a-assets timeout="60000">
             <img id="cafetal-360" src="assets/fondo.jpg" crossorigin="anonymous">
             <a-asset-item id="model-maquina" src="assets/Despulpadora.glb"></a-asset-item>
             <a-asset-item id="cafe-obj" src="assets/10177_CoffeeBean_v01_it2.obj"></a-asset-item>
@@ -212,16 +214,22 @@
             const vrEnv = document.getElementById('vr-environment');
             const raContainer = document.getElementById('ra-container');
             const camera = document.getElementById('main-camera');
+            const video = document.querySelector('video'); // Video de la webcam de AR.js
+            const title = document.getElementById('main-title');
             
             if (mode === 'ar') {
+                document.body.classList.add('ar-mode');
                 title.innerText = "MODO RA ACTIVO";
                 title.style.color = "#FF8C00";
                 vrEnv.setAttribute('visible', 'false');
                 raContainer.setAttribute('visible', 'true');
+                if (video) video.style.display = 'block';
+                
                 // Mostrar maquina por defecto
                 document.getElementById('entity-maquina').setAttribute('visible', 'true');
                 document.getElementById('entity-grano').setAttribute('visible', 'false');
             } else {
+                document.body.classList.remove('ar-mode');
                 title.innerText = "CAFÉ PENSILVANIA";
                 title.style.color = "white";
                 vrEnv.setAttribute('visible', 'true');
@@ -234,22 +242,26 @@
         function switchView(type) {
             const maquina = document.getElementById('entity-maquina');
             const grano = document.getElementById('entity-grano');
-            const raContainer = document.getElementById('ra-container');
+            const title = document.getElementById('main-title');
 
-            // Asegurar que RA esté visible
-            raContainer.setAttribute('visible', 'true');
-            document.getElementById('vr-environment').setAttribute('visible', 'false');
-
-            if (type === 'maquina') {
-                maquina.setAttribute('visible', 'true');
-                grano.setAttribute('visible', 'false');
-                title.innerText = "RA: DESPULPADORA";
-            } else if (type === 'grano') {
-                maquina.setAttribute('visible', 'false');
-                grano.setAttribute('visible', 'true');
-                title.innerText = "RA: GRANO DE CAFÉ";
+            if (type === 'maquina' || type === 'grano') {
+                setMode('ar');
+                if (type === 'maquina') {
+                    maquina.setAttribute('visible', 'true');
+                    grano.setAttribute('visible', 'false');
+                    title.innerText = "RA: DESPULPADORA";
+                } else if (type === 'grano') {
+                    maquina.setAttribute('visible', 'false');
+                    grano.setAttribute('visible', 'true');
+                    title.innerText = "RA: GRANO DE CAFÉ";
+                }
+                title.style.color = "#FF8C00";
+            } else if (type === 'entorno' || type === 'ciclo') {
+                setMode('vr');
+                if (type === 'entorno') title.innerText = "RV: EL CAFETAL";
+                if (type === 'ciclo') title.innerText = "RV: CICLO CULTIVO";
+                title.style.color = "#00c2ff";
             }
-            title.style.color = "#FF8C00";
             console.log("Cambiando vista a:", type);
         }
 
