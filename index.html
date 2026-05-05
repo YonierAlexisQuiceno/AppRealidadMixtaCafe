@@ -116,11 +116,13 @@
             <a-asset-item id="model-maquina" src="assets/Despulpadora.glb"></a-asset-item>
         </a-assets>
 
+        <!-- LUCES GLOBALES (AR Y VR) -->
+        <a-light type="ambient" intensity="0.8"></a-light>
+        <a-light type="directional" position="1 1 1" intensity="0.5"></a-light>
+
         <!-- MODO VR: ENTORNO 360 -->
         <a-entity id="vr-environment" visible="true">
             <a-sky src="#cafetal-360" rotation="0 -90 0"></a-sky>
-            <a-light type="ambient" intensity="0.8"></a-light>
-            <a-light type="directional" position="1 1 1" intensity="0.5"></a-light>
         </a-entity>
 
         <!-- MODO RA: MARCADOR -->
@@ -146,7 +148,7 @@
             </a-entity>
         </a-marker>
 
-        <a-entity camera look-controls position="0 1.6 0"></a-entity>
+        <a-entity camera></a-entity>
     </a-scene>
 
     <!-- ELEMENTO DE AUDIO -->
@@ -217,6 +219,9 @@
 
         // Manejo de errores de carga de modelos y timeout
         let granoLoaded = false;
+        const maquinaAsset = document.getElementById('model-maquina');
+        maquinaAsset.addEventListener('loaded', () => console.log('✅ Despulpadora cargada correctamente'));
+        maquinaAsset.addEventListener('model-error', (e) => console.error('❌ Error cargando Despulpadora:', e));
         
         function enableGranoFallback() {
             if (!granoLoaded) {
