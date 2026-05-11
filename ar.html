@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LUBIT - Realidad Aumentada</title>
-    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.8/aframe/build/aframe-ar.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.4.0/dist/aframe-extras.min.js"></script>
+    <script src="https://unpkg.com/aframe-event-set-component@5.0.0/dist/aframe-event-set-component.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap');
@@ -36,10 +38,11 @@
     <a-scene
         id="ar-scene"
         loading-screen="enabled: false"
-        arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
+        arjs="sourceType: webcam; debugUIEnabled: false;"
         vr-mode-ui="enabled: false"
-        renderer="logarithmicDepthBuffer: true; alpha: true;"
+        renderer="alpha: true; colorManagement: true;"
         embedded
+        model-switcher
     >
         <a-assets timeout="60000">
             <a-asset-item id="model-maquina" src="assets/Despulpadora.glb"></a-asset-item>
@@ -47,11 +50,9 @@
             <a-asset-item id="cafe-mtl" src="assets/10177_CoffeeBean_v01_it2.mtl"></a-asset-item>
         </a-assets>
 
-        <!-- LUCES FUERTES -->
-        <a-light type="ambient" color="#ffffff" intensity="2.0"></a-light>
-        <a-light type="directional" position="1 2 1" intensity="1.5"></a-light>
-        <a-light type="directional" position="-1 1 -1" intensity="1.0"></a-light>
-        <a-light type="point" position="0 3 0" intensity="1.0"></a-light>
+        <!-- LUCES OPTIMIZADAS -->
+        <a-light type="ambient" color="#ffffff" intensity="1.2"></a-light>
+        <a-light type="directional" position="1 2 1" intensity="0.8"></a-light>
 
         <!-- MARCADOR PERSONALIZADO -->
         <a-marker type="pattern" url="assets/pattern-tarjeta.patt" id="marker-tarjeta" smooth="true" smoothCount="5" smoothTolerance="0.01" smoothThreshold="2">
@@ -117,22 +118,33 @@
     </div>
 
     <script>
+        // Componente ECS para manejar el modelo 3D
+        AFRAME.registerComponent('model-switcher', {
+            init: function () {
+                this.maquina = document.querySelector('#entity-maquina');
+                this.grano = document.querySelector('#entity-grano');
+                this.el.addEventListener('switch-model', (e) => {
+                    let type = e.detail.type;
+                    this.maquina.setAttribute('visible', type === 'maquina');
+                    this.grano.setAttribute('visible', type === 'grano');
+                });
+            }
+        });
+
         function showModel(type) {
-            const maquina = document.getElementById('entity-maquina');
-            const grano = document.getElementById('entity-grano');
+            // 1. Disparar evento al componente ECS para separar lógica 3D de UI
+            document.querySelector('#ar-scene').emit('switch-model', {type: type});
+            
+            // 2. Actualizar estado de UI HTML
             const btnMaquina = document.getElementById('btn-maquina');
             const btnGrano = document.getElementById('btn-grano');
             const title = document.getElementById('ar-title');
 
             if (type === 'maquina') {
-                maquina.setAttribute('visible', 'true');
-                grano.setAttribute('visible', 'false');
                 btnMaquina.classList.add('btn-active');
                 btnGrano.classList.remove('btn-active');
                 title.innerText = "⚙️ DESPULPADORA";
             } else {
-                maquina.setAttribute('visible', 'false');
-                grano.setAttribute('visible', 'true');
                 btnGrano.classList.add('btn-active');
                 btnMaquina.classList.remove('btn-active');
                 title.innerText = "🌱 GRANO DE CAFÉ";

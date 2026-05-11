@@ -1,0 +1,42 @@
+# Antigravity Ignore File
+
+# Version Control
+.git/
+.gitignore
+
+# IDE and Editor settings
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Build and Dependencies
+node_modules/
+dist/
+build/
+bin/
+obj/
+.gradle/
+local.properties
+
+# Assets (Binary and large files)
+assets/*.glb
+assets/*.obj
+assets/*.mtl
+assets/*.jpg
+assets/*.png
+assets/*.m4a
+assets/*.mp3
+assets/*.mp4
+assets/*.wav
+assets/*.pat
+assets/*.patt
+
+# Logs
+*.log
